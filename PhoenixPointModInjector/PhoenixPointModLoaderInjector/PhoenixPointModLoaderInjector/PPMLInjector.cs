@@ -31,7 +31,7 @@ namespace PhoenixPointModloaderInjector
         private const string GAME_DLL_FILE_NAME = "Assembly-CSharp.dll";
         private const string BACKUP_FILE_EXT = ".orig";
 
-        private const string HOOK_TYPE = "PhoenixPoint.Common.Game.PhoenixGame";
+        private const string HOOK_TYPE = "Base.Core.Game";
         private const string HOOK_METHOD = "Initialize";
         private const string INJECT_TYPE = "PhoenixPointModLoader.PPModLoader";
         private const string INJECT_METHOD = "Init";
