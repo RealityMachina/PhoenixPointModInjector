@@ -309,7 +309,7 @@ namespace PhoenixPointModloaderInjector
                 var nestedIterator = game.GetType(HOOK_TYPE).NestedTypes.First(x => x.Name.Contains(HOOK_METHOD));
                 hookedMethod = nestedIterator.Methods.First(x => x.Name.Equals("MoveNext"));
             }
-           
+
             // As of Battletech  v1.1 the Start() iterator method of Battletech.Main has this at the end
             //
             //  ...
@@ -323,11 +323,8 @@ namespace PhoenixPointModloaderInjector
 
             // We want to inject after the PrepareSerializer call -- so search for that call in the CIL
 
-            // REALITYMACHINA NOTE - probable equivaalent in PhoenixPoint.Common.Game.Initialize()?
-            // or maybe base.core.game.initialize
-            // potentially phoenixpoint.common.game.phoenixgame.startgame
-            // maybe PhoenixPoint.Common.Game.PhoenixGame.FirstRunCrt
-            // AmplitudeWebClient.OnGameStarted perhaps?
+            // REALITYMACHINA NOTE - equivaalent in PhoenixPoint.Common.Game.PhoenixGame.BootCrt, at least on launch
+  
             var targetInstruction = -1;
             WriteLine("This is a debugging line for our count of instructions");
 
