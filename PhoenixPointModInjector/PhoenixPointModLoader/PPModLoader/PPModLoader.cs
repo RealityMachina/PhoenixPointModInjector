@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Base;
+
 using Harmony;
 
 namespace PhoenixPointModLoader
@@ -16,7 +16,7 @@ namespace PhoenixPointModLoader
         private static readonly List<string> IGNORE_FILE_NAMES = new List<string>()
         {
             "0Harmony.dll",
-            "BattleTechModLoader.dll"
+            "PhoenixPointModLoader.dll"
         };
 
         public static string ModDirectory { get; private set; }
@@ -127,7 +127,7 @@ namespace PhoenixPointModLoader
 
             LogPath = Path.Combine(ModDirectory, "PPModLoader.log");
 
-            var btmlVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            var PPMLVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
             if (!Directory.Exists(ModDirectory))
                 Directory.CreateDirectory(ModDirectory);
@@ -135,7 +135,7 @@ namespace PhoenixPointModLoader
             // create log file, overwriting if it's already there
             using (var logWriter = File.CreateText(LogPath))
             {
-                logWriter.WriteLine($"PPModLoader -- PPML v{btmlVersion} -- {DateTime.Now}");
+                logWriter.WriteLine($"PPModLoader -- PPML v{PPMLVersion} -- {DateTime.Now}");
             }
 
             // ReSharper disable once UnusedVariable
@@ -159,4 +159,4 @@ namespace PhoenixPointModLoader
         }
     }
 }
-}
+
