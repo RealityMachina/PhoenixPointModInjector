@@ -1,5 +1,5 @@
 # PhoenixPointModInjector
-Experimental tool to enable multi-mod usage with Snapshot Games' Phoenix Point
+Experimental tool to enable multi-mod usage with Snapshot Games' Phoenix Point, utilizing https://github.com/pardeike/Harmony
 
 
 Effectively forked from https://github.com/BattletechModders/BattleTechModLoader
