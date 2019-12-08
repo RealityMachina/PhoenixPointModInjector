@@ -27,12 +27,12 @@ namespace PhoenixPointModloaderInjector
         private const int RC_REQUIRED_GAME_VERSION_MISMATCH = 7;
        
 
-        private const string MOD_LOADER_DLL_FILE_NAME = "PhoenixPointModLoader.dll";
+        private const string MOD_LOADER_DLL_FILE_NAME = "PPModLoader.dll";
         private const string GAME_DLL_FILE_NAME = "Assembly-CSharp.dll";
         private const string BACKUP_FILE_EXT = ".orig";
 
-        private const string HOOK_TYPE = "Base.Core.Game";
-        private const string HOOK_METHOD = "Initialize";
+        private const string HOOK_TYPE = "PhoenixPoint.Common.Game.PhoenixGame";
+        private const string HOOK_METHOD = "BootCrt";
         private const string INJECT_TYPE = "PhoenixPointModLoader.PPModLoader";
         private const string INJECT_METHOD = "Init";
 
@@ -302,15 +302,14 @@ namespace PhoenixPointModloaderInjector
             // get the methods that we're hooking and injecting
             var injectedMethod = injecting.GetType(INJECT_TYPE).Methods.Single(x => x.Name == INJECT_METHOD);
             var hookedMethod = game.GetType(HOOK_TYPE).Methods.First(x => x.Name == HOOK_METHOD);
-
+            
             // If the return type is an iterator -- need to go searching for its MoveNext method which contains the actual code you'll want to inject
-            if (hookedMethod.ReturnType.Name.Equals("IEnumerator"))
+            if (hookedMethod.ReturnType.Name.Contains("IEnumerator"))
             {
-                var nestedIterator = game.GetType(HOOK_TYPE).NestedTypes.First(x =>
-                    x.Name.Contains(HOOK_METHOD) && x.Name.Contains("Iterator"));
+                var nestedIterator = game.GetType(HOOK_TYPE).NestedTypes.First(x => x.Name.Contains(HOOK_METHOD));
                 hookedMethod = nestedIterator.Methods.First(x => x.Name.Equals("MoveNext"));
             }
-
+           
             // As of Battletech  v1.1 the Start() iterator method of Battletech.Main has this at the end
             //
             //  ...
@@ -325,24 +324,38 @@ namespace PhoenixPointModloaderInjector
             // We want to inject after the PrepareSerializer call -- so search for that call in the CIL
 
             // REALITYMACHINA NOTE - probable equivaalent in PhoenixPoint.Common.Game.Initialize()?
-
+            // or maybe base.core.game.initialize
+            // potentially phoenixpoint.common.game.phoenixgame.startgame
+            // maybe PhoenixPoint.Common.Game.PhoenixGame.FirstRunCrt
+            // AmplitudeWebClient.OnGameStarted perhaps?
             var targetInstruction = -1;
+            WriteLine("This is a debugging line for our count of instructions");
+
+            WriteLine(hookedMethod.Body.Instructions.Count);
             for (var i = 0; i < hookedMethod.Body.Instructions.Count; i++)
             {
                 var instruction = hookedMethod.Body.Instructions[i];
+                
                 if (instruction.OpCode.Code.Equals(Code.Call) && instruction.OpCode.OperandType.Equals(OperandType.InlineMethod))
                 {
                     var methodReference = (MethodReference)instruction.Operand;
-                    if (methodReference.Name.Contains("GetComponent<SerializationComponent>"))
-                        targetInstruction = i;
+                    WriteLine(methodReference.Name);
+                    if (methodReference.Name.Contains("MenuCrt"))
+                        targetInstruction = i + 1; // hack - we want to run after that instruction has been fully processed, not in the middle of it.
                 }
+
             }
-
+            
             if (targetInstruction == -1)
+            {
+                WriteLine("This is a debugging line and our target line was not found.");
                 return false;
-
+            }
             hookedMethod.Body.GetILProcessor().InsertAfter(hookedMethod.Body.Instructions[targetInstruction],
                 Instruction.Create(OpCodes.Call, game.ImportReference(injectedMethod)));
+
+
+            WriteLine("This is another debugging line. If we've gotten here, we should be fine?");
 
             return true;
         }

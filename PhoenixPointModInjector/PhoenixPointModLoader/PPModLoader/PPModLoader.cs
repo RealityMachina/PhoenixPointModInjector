@@ -16,7 +16,7 @@ namespace PhoenixPointModLoader
         private static readonly List<string> IGNORE_FILE_NAMES = new List<string>()
         {
             "0Harmony.dll",
-            "PhoenixPointModLoader.dll"
+            "PPModLoader.dll"
         };
 
         public static string ModDirectory { get; private set; }
@@ -117,13 +117,13 @@ namespace PhoenixPointModLoader
 
         public static void Init()
         {
-            var manifestDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
+            var manifestDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
                 ?? throw new InvalidOperationException("Manifest path is invalid.");
 
 
             // this should be (wherever Phoenix Point is Installed)\PhoenixPoint\PhoenixPointWin64_Data\Managed
             ModDirectory = Path.GetFullPath(
-                Path.Combine(manifestDirectory, Path.Combine( @"..\..\"))) ;
+                Path.Combine(manifestDirectory, Path.Combine( @"..\..\Mods"))) ;
 
             LogPath = Path.Combine(ModDirectory, "PPModLoader.log");
 
