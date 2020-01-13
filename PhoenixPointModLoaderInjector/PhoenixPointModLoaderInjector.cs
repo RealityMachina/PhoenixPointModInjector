@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Ionic.Zip;
+using Mono.Options;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Options;
-using Newtonsoft.Json;
 using static System.Console;
-using FieldAttributes = Mono.Cecil.FieldAttributes;
+
 
 namespace PhoenixPointModloaderInjector
 {
-    internal static class BTMLInjector
+	internal static class PhoenixPointModLoaderInjector
     {
         // return codes
         private const int RC_NORMAL = 0;
@@ -27,13 +24,13 @@ namespace PhoenixPointModloaderInjector
         private const int RC_REQUIRED_GAME_VERSION_MISMATCH = 7;
        
 
-        private const string MOD_LOADER_DLL_FILE_NAME = "PPModLoader.dll";
+        private const string MOD_LOADER_DLL_FILE_NAME = "PhoenixPointModLoader.dll";
         private const string GAME_DLL_FILE_NAME = "Assembly-CSharp.dll";
         private const string BACKUP_FILE_EXT = ".orig";
 
         private const string HOOK_TYPE = "PhoenixPoint.Common.Game.PhoenixGame";
         private const string HOOK_METHOD = "BootCrt";
-        private const string INJECT_TYPE = "PhoenixPointModLoader.PPModLoader";
+        private const string INJECT_TYPE = "PhoenixPointModLoader.PhoenixPointModLoader";
         private const string INJECT_METHOD = "Init";
 
         private const string GAME_VERSION_TYPE = "VersionInfo";
@@ -48,12 +45,12 @@ namespace PhoenixPointModloaderInjector
         {
             {
                 "d|detect",
-                "Detect if the BTG assembly is already injected",
+                "Detect if the PhoenixPoint game assembly is already injected",
                 v => OptionsIn.Detecting = v != null
             },
             {
                 "g|gameversion",
-                "Print the BTG version number",
+                "Print the PhoenixPoint game version number",
                 v => OptionsIn.GameVersion = v != null
             },
             {
@@ -68,7 +65,7 @@ namespace PhoenixPointModloaderInjector
             },
             {
                 "manageddir=",
-                "specify managed dir where BTG's Assembly-CSharp.dll is located",
+                "specify managed dir where PhoenixPoint game's Assembly-CSharp.dll is located",
                 v => OptionsIn.ManagedDir = v
             },
             {
@@ -83,17 +80,17 @@ namespace PhoenixPointModloaderInjector
             },
             {
                 "requiredversion=",
-                "Don't continue with /install, /update, etc. if the BTG game version does not match given argument",
+                "Don't continue with /install, /update, etc. if the PhoenixPoint game version does not match given argument",
                 v => OptionsIn.RequiredGameVersion = v
             },
             {
                 "r|restore",
-                "Restore pristine backup BTG assembly to folder",
+                "Restore pristine backup PhoenixPoint game assembly to folder",
                 v => OptionsIn.Restoring = v != null
             },
             {
                 "u|update",
-                "Update mod loader injection of BTG assembly to current BTML version",
+                "Update mod loader injection of PhoenixPoint game assembly to current PPML version",
                 v => OptionsIn.Updating = v != null
             },
             {
@@ -442,8 +439,8 @@ namespace PhoenixPointModloaderInjector
 
         private static void SayRequiredGameVersion(string version, string expectedVersion)
         {
-            WriteLine($"Expected BTG v{expectedVersion}");
-            WriteLine($"Actual BTG v{version}");
+            WriteLine($"Expected PhoenixPoint game v{expectedVersion}");
+            WriteLine($"Actual PhoenixPoint game v{version}");
         }
 
         private static void SayRequiredGameVersionMismatchMessage(string msg)
@@ -481,14 +478,14 @@ namespace PhoenixPointModloaderInjector
         private static void SayGameAssemblyMissingError(string givenManagedDir)
         {
             SayHeader();
-            WriteLine($"ERROR: We could not find the BTG assembly {GAME_DLL_FILE_NAME} in directory '{givenManagedDir}'.\n" +
+            WriteLine($"ERROR: We could not find the PhoenixPoint game assembly {GAME_DLL_FILE_NAME} in directory '{givenManagedDir}'.\n" +
                 "Are you sure that is the correct directory?");
         }
 
         private static void SayModLoaderAssemblyMissingError(string expectedModLoaderAssemblyPath)
         {
             SayHeader();
-            WriteLine($"ERROR: We could not find the BTG assembly {MOD_LOADER_DLL_FILE_NAME} at '{expectedModLoaderAssemblyPath}'.\n" +
+            WriteLine($"ERROR: We could not find the PhoenixPoint game assembly {MOD_LOADER_DLL_FILE_NAME} at '{expectedModLoaderAssemblyPath}'.\n" +
                 $"Is {MOD_LOADER_DLL_FILE_NAME} in the correct place? It should be in the same directory as this injector executable.");
         }
         
@@ -508,7 +505,7 @@ namespace PhoenixPointModloaderInjector
         private static void SayHowToRecoverInjectedBackup(string backupFileName)
         {
             WriteLine("----------------------------");
-            WriteLine($"The backup game assembly file named \"{backupFileName}\" was already BTML injected. Something has gone wrong.");
+            WriteLine($"The backup game assembly file named \"{backupFileName}\" was already PPML injected. Something has gone wrong.");
             WriteLine("You may need to reinstall or use Steam/GOG's file verification function if you have no other backup.");
         }
 
@@ -566,7 +563,7 @@ namespace PhoenixPointModloaderInjector
 
         private static string FormulateMessage(string backupFileName)
         {
-            return $"The backup file \"{backupFileName}\" was BTML-injected.";
+            return $"The backup file \"{backupFileName}\" was PPML-injected.";
         }
     }
 

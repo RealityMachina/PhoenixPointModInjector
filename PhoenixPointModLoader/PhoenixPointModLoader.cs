@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
 using Harmony;
 
 namespace PhoenixPointModLoader
@@ -16,7 +15,7 @@ namespace PhoenixPointModLoader
         private static readonly List<string> IGNORE_FILE_NAMES = new List<string>()
         {
             "0Harmony.dll",
-            "PPModLoader.dll"
+            "PhoenixPointModLoader.dll"
         };
 
         public static string ModDirectory { get; private set; }
