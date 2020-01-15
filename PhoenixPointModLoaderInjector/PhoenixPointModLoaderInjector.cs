@@ -136,6 +136,7 @@ namespace PhoenixPointModloaderInjector
                     }
 
                     managedDirectory = Path.GetFullPath(OptionsIn.ManagedDir);
+                    Environment.CurrentDirectory = managedDirectory;
                 }
 
                 var gameDllPath = Path.Combine(managedDirectory, GAME_DLL_FILE_NAME);
