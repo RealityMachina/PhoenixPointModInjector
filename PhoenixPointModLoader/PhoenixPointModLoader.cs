@@ -8,7 +8,7 @@ using static PhoenixPointModLoader.Logger;
 
 namespace PhoenixPointModLoader
 {
-	public static class PPModLoader
+	public static class PhoenixPointModLoader
 	{
 		private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = BindingFlags.Public | BindingFlags.Static;
 		private static readonly List<string> IGNORE_FILE_NAMES = new List<string>()
