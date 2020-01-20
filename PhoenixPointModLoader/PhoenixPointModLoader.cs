@@ -19,105 +19,9 @@ namespace PhoenixPointModLoader
 
 		public static string ModDirectory { get; private set; }
 
-		public static Assembly LoadDLL(
-			string path,
-			string methodName = "Init",
-			string typeName = null,
-			object[] parameters = null,
-			BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS)
-		{
-			string fileName = Path.GetFileName(path);
+	
 
-			if (!File.Exists(path))
-			{
-				LogWithDate($"Failed to load {fileName} at path {path}, because it doesn't exist at that path.");
-				return null;
-			}
-
-			try
-			{
-				Assembly assembly = Assembly.LoadFrom(path);
-				AssemblyName name = assembly.GetName();
-				Version version = name.Version;
-				var types = new List<Type>();
-
-				// if methodName is null, don't try to run an entry point
-				if (string.IsNullOrEmpty(methodName))
-					return assembly;
-
-				// find the type/s with our entry point/s
-				if (typeName == null)
-				{
-					types.AddRange(assembly.GetTypes().Where(x => x.GetMethod(methodName, bFlags) != null));
-				}
-				else
-				{
-					types.Add(assembly.GetType(typeName));
-				}
-
-				if (types.Count == 0)
-				{
-					LogWithDate($"{fileName} (v{version}): Failed to find specified entry point: {typeName ?? "NotSpecified"}.{methodName}");
-					return null;
-				}
-
-				// run each entry point
-				foreach (var type in types)
-				{
-					MethodInfo entryMethod = type.GetMethod(methodName, bFlags);
-					ParameterInfo[] methodParams = entryMethod.GetParameters();
-
-					if (methodParams == null)
-						continue;
-
-					if (methodParams.Length == 0)
-					{
-						LogWithDate($"{fileName} (v{version}): Found and called entry point \"{entryMethod}\" in type \"{type.FullName}\"");
-						entryMethod.Invoke(null, null);
-						continue;
-					}
-
-					// match up the passed in params with the method's params, if they match, call the method
-					if (parameters != null && methodParams.Length == parameters.Length
-						&& !methodParams.Where((info, i) => parameters[i]?.GetType() != info.ParameterType).Any())
-					{
-						LogWithDate($"{fileName} (v{version}): Found and called entry point \"{entryMethod}\" in type \"{type.FullName}\"");
-						entryMethod.Invoke(null, parameters);
-						continue;
-					}
-
-					// failed to call entry method of parameter mismatch
-					// diagnosing problems of this type is pretty hard
-					LogWithDate($"{fileName} (v{version}): Provided params don't match {type.Name}.{entryMethod.Name}");
-					Log("\tPassed in Params:");
-					if (parameters != null)
-					{
-						foreach (var parameter in parameters)
-							Log($"\t\t{parameter.GetType()}");
-					}
-					else
-					{
-						Log("\t\t'parameters' is null");
-					}
-
-					if (methodParams.Length != 0)
-					{
-						Log("\tMethod Params:");
-						foreach (var prm in methodParams)
-							Log($"\t\t{prm.ParameterType}");
-					}
-				}
-
-				return assembly;
-			}
-			catch (Exception e)
-			{
-				LogException($"{fileName}: While loading a dll, an exception occured", e);
-				return null;
-			}
-		}
-
-		public static void Init()
+		public static void Initialize()
 		{
 			string manifestDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 				?? throw new InvalidOperationException("Manifest path is invalid.");
@@ -144,20 +48,75 @@ namespace PhoenixPointModLoader
 			var harmony = HarmonyInstance.Create("io.github.realitymachina.PPModLoader");
 
 			// get all dll paths
-			string[] dllPaths = Directory.GetFiles(ModDirectory).Where(x => Path.GetExtension(x).ToLower() == ".dll").ToArray();
+			List<string> dllPaths = Directory.GetFiles(ModDirectory, "*.dll", SearchOption.AllDirectories).ToList();
 
-			if (dllPaths.Length == 0)
+			if (!dllPaths.Any())
 			{
 				Log(@"No .DLLs loaded. DLLs must be placed in the root of the folder \PhoenixPoint\Mods\.");
 				return;
 			}
 
-			// load the DLLs
+			List<IPhoenixPointMod> allMods = new List<IPhoenixPointMod>();
 			foreach (var dllPath in dllPaths)
 			{
 				if (!IGNORE_FILE_NAMES.Contains(Path.GetFileName(dllPath)))
-					LoadDLL(dllPath);
+					allMods.AddRange(LoadDll(dllPath));
 			}
+
+			InitializeMods(allMods);	
+		}
+
+		private static void InitializeMods(List<IPhoenixPointMod> allMods)
+		{
+			var prioritizedModList = allMods.ToLookup(x => x.Priority);
+			ModLoadPriority[] loadOrder = new[] { ModLoadPriority.High, ModLoadPriority.Normal, ModLoadPriority.Low };
+			foreach (ModLoadPriority priority in loadOrder)
+			{
+				Log("Attempting to initialize `{0}` priority mods.", priority.ToString());
+				foreach (var mod in prioritizedModList[priority])
+				{
+					try
+					{
+						mod.Initialize();
+					}
+					catch (Exception e)
+					{
+						Log("Mod class `{0}` from DLL `{1}` failed to initialize.", mod.GetType().Name, mod.GetType().Name);
+						Log(e.ToString());
+					}
+				}
+			}
+		}
+
+		private static IList<IPhoenixPointMod> LoadDll(string path)
+		{
+			string originalDirectory = Environment.CurrentDirectory;
+			Environment.CurrentDirectory = Path.GetDirectoryName(path);
+			Assembly mod = Assembly.LoadFile(path);
+			List<Type> modClasses = mod.GetTypes().Where(x => typeof(IPhoenixPointMod).IsAssignableFrom(x)).ToList();
+
+			if (!modClasses.Any())
+			{
+				Log("No mod classes found in DLL: {0}", Path.GetFileName(path));
+				return new List<IPhoenixPointMod>();
+			}
+
+			var modInstances = new List<IPhoenixPointMod>();
+			foreach (Type modClass in modClasses)
+			{
+				IPhoenixPointMod modInstance = Activator.CreateInstance(modClass) as IPhoenixPointMod;
+				if (modInstance == null)
+				{
+					Log("Attempted to create instance of class `{0}` but failed when loading DLL `{1}`.",
+						modClass.Name,
+						Path.GetFileName(path));
+					continue;
+				}
+
+				modInstances.Add(modInstance);
+			}
+			Environment.CurrentDirectory = originalDirectory;
+			return modInstances;
 		}
 	}
 }
