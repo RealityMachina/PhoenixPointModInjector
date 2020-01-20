@@ -12,5 +12,20 @@ Run the game to have it generate the `Mods` folder for the Mod Loader. Place all
 
 # Developer Information
 
-The mod loader will recursively search the `Mods` directory in order to obtain all DLLs it can find. It will then 
+The mod loader will recursively search the `Mods` directory in order to obtain all DLLs it can find. It will then look for all types implementing the `IPhoenixPointMod` interface.
 
+Once all `IPhoenixPointMod` objects have been instantiated and sorted by `ModLoadPriority` in order of `High`, `Normal`, `Low`; the mod loader will execute the `Initialize()` method on each instance.
+
+**NOTE:** Due to the fact that reflection is being used to instantiate mods, please ensure that your types have a default or parameterless constructor defined! Not doing so runs the risk of your mods not being usable.
+
+# Development To-Do List
+
+[] Allow for more robust mod constructors and inject dependencies. (Use an IoC container for this?)
+[] More robust mod loading settings. (e.g. disable certain mods)
+[] More robust mod metadata. (e.g. game version compatibility, dependencies, etc.)
+[] Incorporate functionality of PPDefModifier with taketwo's blessing.
+[] Allow for asset replacement.
+[] Provide config file API for mods.
+[] Provide game behavior hooks, if possible.
+[] Provide cache of PP game objects (items, weapons, armor, etc.)
+[] Provide API for custom UI (such as menus, popups, etc.)
