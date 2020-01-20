@@ -29,9 +29,9 @@ namespace PhoenixPointModloaderInjector
         private const string BACKUP_FILE_EXT = ".orig";
 
         private const string HOOK_TYPE = "PhoenixPoint.Common.Game.PhoenixGame";
-        private const string HOOK_METHOD = "BootCrt";
+        private const string HOOK_METHOD = "StartGame";
         private const string INJECT_TYPE = "PhoenixPointModLoader.PhoenixPointModLoader";
-        private const string INJECT_METHOD = "Init";
+        private const string INJECT_METHOD = "Initialize";
 
         private const string GAME_VERSION_TYPE = "VersionInfo";
         private const string GAME_VERSION_CONST = "CURRENT_VERSION_NUMBER";
