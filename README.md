@@ -20,12 +20,12 @@ Once all `IPhoenixPointMod` objects have been instantiated and sorted by `ModLoa
 
 # Development To-Do List
 
-[] Allow for more robust mod constructors and inject dependencies. (Use an IoC container for this?)
-[] More robust mod loading settings. (e.g. disable certain mods)
-[] More robust mod metadata. (e.g. game version compatibility, dependencies, etc.)
-[] Incorporate functionality of PPDefModifier with taketwo's blessing.
-[] Allow for asset replacement.
-[] Provide config file API for mods.
-[] Provide game behavior hooks, if possible.
-[] Provide cache of PP game objects (items, weapons, armor, etc.)
-[] Provide API for custom UI (such as menus, popups, etc.)
+- [ ] Allow for more robust mod constructors and inject dependencies. (Use an IoC container for this?)
+- [ ] More robust mod loading settings. (e.g. disable certain mods)
+- [ ] More robust mod metadata. (e.g. game version compatibility, dependencies, etc.)
+- [ ] Incorporate functionality of PPDefModifier with taketwo's blessing.
+- [ ] Allow for asset replacement.
+- [ ] Provide config file API for mods.
+- [ ] Provide game behavior hooks, if possible.
+- [ ] Provide cache of PP game objects (items, weapons, armor, etc.)
+- [ ] Provide API for custom UI (such as menus, popups, etc.)
